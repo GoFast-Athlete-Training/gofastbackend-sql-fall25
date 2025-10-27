@@ -12,6 +12,10 @@ const API_CONFIG = {
     CREATE_OR_FIND: '/athleteuser',           // POST - Create/find athlete from Firebase
     GET_PROFILE: '/athlete/:id',              // GET - Get athlete profile
     UPDATE_PROFILE: '/athlete/:id/profile',   // PUT - Update athlete profile
+    DELETE_BY_ID: '/athlete/:id',             // DELETE - Delete athlete by ID
+    DELETE_BY_EMAIL: '/athlete/email/:email', // DELETE - Delete athlete by email
+    DELETE_BY_FIREBASE: '/athlete/firebase/:firebaseId', // DELETE - Delete athlete by Firebase ID
+    BULK_DELETE: '/athlete/bulk',             // DELETE - Bulk delete athletes
   },
 
   // Training Endpoints (Future)

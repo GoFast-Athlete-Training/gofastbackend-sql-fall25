@@ -25,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/athlete', require('./routes/Athlete/athleteCreateRoute'));
+app.use('/api/athlete', require('./routes/Athlete/athleteDeleteRoute'));
 
 // Health check
 app.get('/api/health', (req, res) => {
