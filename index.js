@@ -12,9 +12,12 @@ const prisma = new PrismaClient();
 // Middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173',
     'https://gofastfrontend-demo.vercel.app',
+    'https://gofastfrontend-mvp1.vercel.app',
+    'https://gofast-user-dashboard.vercel.app',
     /^https:\/\/gofastfrontend-demo-.*\.vercel\.app$/,
+    /^https:\/\/gofastfrontend-mvp1-.*\.vercel\.app$/,
+    /^https:\/\/gofast-user-dashboard-.*\.vercel\.app$/,
     /^https:\/\/gofast-.*\.vercel\.app$/
   ],
   credentials: true
@@ -27,6 +30,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/athlete', require('./routes/Athlete/athleteCreateRoute'));
 app.use('/api/athlete', require('./routes/Athlete/athleteDeleteRoute'));
 app.use('/api', require('./routes/Athlete/athleteHydrationRoute'));
+
+// Add direct athletes route for hydration
+app.get('/api/athletes', async (req, res) => {
+  try {
+    const athletes = await prisma.athlete.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(athletes);
+  } catch (error) {
+    console.error('Error fetching athletes:', error);
+    res.status(500).json({ error: 'Failed to fetch athletes' });
+  }
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
