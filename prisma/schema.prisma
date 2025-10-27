@@ -10,228 +10,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Racer {
-  racerId   String   @id // Main identifier - no separate id field
-  email     String   @unique
-  firstName String?
-  lastName  String?
-  phone     String?
-  age       Int?     // Age for baseline pace calculations
-  firebaseId String? // Firebase auth ID
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Profile
-  profile RunnerProfile?
-
-  // Training
-  trainingPlans TrainingPlan[]
-  activities   Activity[]
-  reflections  Reflection[]
-  userRaces    UserRace[]
-
-  @@map("racers")
-}
-
-model RunnerProfile {
-  id      String @id @default(cuid())
-  racerId String @unique
-  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
-
-  // Personal Info
-  age           Int?
-  gender        String?
-  location      String?
-  experience    String? // beginner, intermediate, advanced
-  currentPace   String? // 5K pace like "8:30"
-  weeklyMileage Int?    // current weekly mileage
-
-  // Goals
-  primaryGoal   String? // marathon, half, 5k, etc.
-  targetPace    String? // goal pace
-  targetTime    String? // goal finish time
-
-  // Preferences
-  trainingDays  Int?    // days per week
-  preferredTime String? // morning, evening
-  injuryHistory String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("runner_profiles")
-}
-
-model Race {
-  raceId      String   @id // Main race identifier
-  name        String
-  date        DateTime
-  distance    String   // "5K", "10K", "Half Marathon", "Marathon"
-  location    String
-  description String?
-  website     String?
+model Athlete {
+  id        String @id @default(cuid())
+  firebaseId String @unique
   
-  // Course info
-  elevationGain Int?    // feet
-  courseType    String? // flat, hilly, trail, road
-  weatherNotes  String?
-
-  // Race details
-  registrationOpen Boolean @default(true)
-  price           Float?
-  maxParticipants Int?
-  startTime       String? // "7:00 AM"
-  packetPickup    String? // "Friday 4-8 PM"
+  // Universal Profile (MVP1 Required)
+  firstName    String?
+  lastName     String?
+  email        String @unique
+  gofastHandle String? @unique
+  birthday     DateTime?
+  gender       String?
+  city         String?
+  state        String?
+  primarySport String?
+  photoURL     String?
+  bio          String?
+  instagram    String?
   
-  // Course specifics
-  startLocation String?
-  finishLocation String?
-  aidStations   Int?
-  timeLimit     String? // "6 hours"
+  // Training Profile (Future)
+  currentPace     String?
+  weeklyMileage   Int?
+  trainingGoal    String?
+  targetRace      String?
+  trainingStartDate DateTime?
   
+  // Match Profile (Future)
+  preferredDistance String?
+  timePreference    String?
+  paceRange         String?
+  runningGoals      String?
+  
+  // System fields
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relations
-  trainingPlans TrainingPlan[]
-  userRaces     UserRace[]
-
-  @@map("races")
-}
-
-model UserRace {
-  id       String @id @default(cuid())
-  racerId  String
-  raceId   String
-  racer    Racer   @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
-  race     Race    @relation(fields: [raceId], references: [raceId], onDelete: Cascade)
-
-  // Race-specific data
-  goalTime     String?  // "3:30:00"
-  actualTime   String?  // "3:28:15"
-  status       String   @default("registered") // registered, completed, cancelled
-  notes        String?
+  status    String   @default("active")
   
-  // Training plan reference
-  trainingPlanId String? @unique
-  trainingPlan   TrainingPlan? @relation(fields: [trainingPlanId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([racerId, raceId])
-  @@map("user_races")
-}
-
-model TrainingPlan {
-  id      String @id @default(cuid())
-  racerId String
-  raceId  String
-  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
-  race    Race   @relation(fields: [raceId], references: [id], onDelete: Cascade)
-
-  // Plan metadata
-  startDate    DateTime
-  raceDate     DateTime
-  totalWeeks   Int
-  currentWeek  Int     @default(1)
-  status       String  @default("active") // active, completed, paused
-
-  // AI-generated plan data
-  planData     Json?   // Store the full AI-generated plan
-  phase        String? // base, build, peak, taper
-  weeklyMileage Int?   // target weekly mileage
-
-  // Relations
-  userRace     UserRace? @relation(fields: [id], references: [trainingPlanId])
-  workouts     Workout[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("training_plans")
-}
-
-model Workout {
-  id             String @id @default(cuid())
-  trainingPlanId String
-  trainingPlan   TrainingPlan @relation(fields: [trainingPlanId], references: [id], onDelete: Cascade)
-
-  // Workout details
-  weekNumber     Int
-  dayOfWeek      String // Monday, Tuesday, etc.
-  workoutType    String // easy, tempo, long, intervals, rest
-  distance       Float? // miles
-  duration       String? // "45 minutes"
-  pace           String? // "8:30"
-  description    String?
-  
-  // Structured workout
-  segments       Json?   // Array of workout segments
-  notes          String?
-
-  // Completion
-  completed      Boolean @default(false)
-  completedAt    DateTime?
-  actualDistance Float?
-  actualPace     String?
-  actualDuration String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("workouts")
-}
-
-model Activity {
-  id      String @id @default(cuid())
-  racerId String
-  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
-
-  // Activity data
-  name        String
-  type        String   // run, bike, swim, etc.
-  distance    Float?   // miles
-  duration    String?  // "45:30"
-  pace        String?  // "8:30"
-  date        DateTime
-  source      String?  // garmin, manual, strava
-  
-  // Additional data
-  elevationGain Int?
-  heartRate     Json?   // {avg: 150, max: 180, zones: {...}}
-  weather       Json?   // {temp: 65, conditions: "sunny"}
-  notes         String?
-
-  // Relations
-  workoutId String? @unique
-  workout   Workout? @relation(fields: [workoutId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("activities")
-}
-
-model Reflection {
-  id      String @id @default(cuid())
-  racerId String
-  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
-
-  // Reflection data
-  date        DateTime
-  type        String   // daily, weekly, post-workout, post-race
-  content     String   // the actual reflection text
-  mood        String?  // great, good, okay, tough
-  energy      String?  // high, medium, low
-  motivation   String?  // high, medium, low
-  
-  // Related data
-  activityId String?
-  activity   Activity? @relation(fields: [activityId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("reflections")
+  @@map("athletes")
 }

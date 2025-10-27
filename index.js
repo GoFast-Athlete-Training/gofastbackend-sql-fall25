@@ -24,11 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/training', require('./routes/training'));
-app.use('/api/races', require('./routes/races'));
-app.use('/api/activities', require('./routes/activities'));
+app.use('/api/athlete', require('./routes/Athlete/athleteCreateRoute'));
 
 // Health check
 app.get('/api/health', (req, res) => {
