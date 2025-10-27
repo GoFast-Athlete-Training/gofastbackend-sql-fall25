@@ -1,13 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { PrismaClient } = require('@prisma/client');
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 
 // Middleware
 app.use(cors({
@@ -34,9 +32,17 @@ app.use('/api', require('./routes/Athlete/athleteHydrationRoute'));
 // Add direct athletes route for hydration
 app.get('/api/athletes', async (req, res) => {
   try {
-    const athletes = await prisma.athlete.findMany({
-      orderBy: { createdAt: 'desc' }
-    });
+    // Temporary mock data until Prisma is re-added
+    const athletes = [
+      {
+        id: 'mock-1',
+        firebaseId: 'mock-firebase-1',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        createdAt: new Date().toISOString()
+      }
+    ];
     res.json(athletes);
   } catch (error) {
     console.error('Error fetching athletes:', error);
@@ -75,9 +81,8 @@ app.listen(PORT, () => {
 });
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
+process.on('SIGINT', () => {
   console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
   process.exit(0);
 });
 
