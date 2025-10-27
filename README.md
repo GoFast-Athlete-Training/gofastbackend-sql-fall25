@@ -1,23 +1,25 @@
-# GoFast Backend SQL
+# GoFast Backend SQL - MVP1 (RunCrew Focus)
 
-A clean, AI-powered backend for GoFast built with Node.js, Express, PostgreSQL, and Prisma.
+A clean, community-focused backend for GoFast MVP1 built with Node.js, Express, PostgreSQL, and Prisma.
 
-## Features
+## MVP1 Features (RunCrew Phase)
 
-- 🤖 **AI-Powered Training Plans** - OpenAI generates personalized training plans
-- 🏃‍♂️ **Smart Workout Analysis** - AI analyzes completed workouts and provides insights
-- 📊 **PostgreSQL Database** - Clean, structured data with Prisma ORM
-- 🔐 **JWT Authentication** - Secure user authentication
+- 👥 **RunCrew Management** - Create and join running crews with leaderboards
+- 🏃‍♂️ **Activity Tracking** - Garmin Connect integration for real-time activity sync
+- 📊 **Leaderboards** - Weekly/monthly competitions (miles, pace, calories)
+- 🏆 **Points System** - Achievement tracking and crew challenges
+- 🔐 **Firebase + JWT Authentication** - Secure user authentication
 - 📱 **RESTful API** - Clean, documented API endpoints
-- 🚀 **Modern Architecture** - Clean separation of concerns
+- 🚀 **Athlete-First Architecture** - Universal athlete relationships
 
 ## Tech Stack
 
 - **Node.js** + **Express.js** - API server
 - **PostgreSQL** - Database
 - **Prisma** - ORM and database toolkit
-- **OpenAI** - AI-powered training logic
-- **JWT** - Authentication
+- **Firebase Admin** - User authentication
+- **JWT** - API authentication
+- **Garmin Connect API** - Activity tracking
 - **CORS** - Cross-origin resource sharing
 
 ## Quick Start
@@ -35,8 +37,12 @@ cp env.example .env
 Edit `.env` with your configuration:
 ```env
 DATABASE_URL="postgresql://username:password@localhost:5432/gofast_db"
-OPENAI_API_KEY="your_openai_api_key_here"
+FIREBASE_PROJECT_ID="your_firebase_project_id"
+FIREBASE_PRIVATE_KEY="your_firebase_private_key"
+FIREBASE_CLIENT_EMAIL="your_firebase_client_email"
 JWT_SECRET="your_jwt_secret_here"
+GARMIN_CONSUMER_KEY="your_garmin_consumer_key"
+GARMIN_CONSUMER_SECRET="your_garmin_consumer_secret"
 ```
 
 ### 3. Database Setup
@@ -64,72 +70,68 @@ API will be available at `http://localhost:3001`
 - `GET /api/health` - Server status
 
 ### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user
+- `POST /api/auth/register` - Register new athlete
+- `POST /api/auth/login` - Login athlete
+- `GET /api/auth/me` - Get current athlete
 
-### Training Plans
-- `POST /api/training/plans/generate` - Generate AI training plan
-- `GET /api/training/plans` - Get user's training plans
-- `GET /api/training/plans/:id` - Get specific plan
-- `PUT /api/training/plans/:id` - Update plan
+### RunCrew Management
+- `POST /api/crews` - Create new crew
+- `GET /api/crews/:crewCode` - Get crew by code
+- `POST /api/crews/:crewId/join` - Join crew
+- `DELETE /api/crews/:crewId/leave` - Leave crew
+- `GET /api/crews/:crewId/members` - Get crew members
+- `GET /api/crews/:crewId/leaderboard` - Get crew leaderboard
 
-### Workouts
-- `GET /api/training/plans/:planId/workouts/:week` - Get week workouts
-- `PUT /api/training/workouts/:id/complete` - Mark workout complete
-- `POST /api/training/workouts/analyze` - AI workout analysis
-
-### Races
-- `GET /api/races` - Get all races
-- `POST /api/races` - Create race
-- `POST /api/races/:id/register` - Register for race
-
-### Activities
-- `GET /api/activities` - Get user activities
+### Activity Tracking
+- `GET /api/activities` - Get athlete activities
 - `POST /api/activities` - Create activity
-- `GET /api/activities/user/:userId/summary` - Get activity summary
+- `POST /api/activities/sync` - Sync from Garmin
+- `GET /api/activities/stats` - Get activity statistics
+- `GET /api/activities/leaderboard` - Get activity leaderboard
+
+### Points System
+- `GET /api/points` - Get athlete points
+- `POST /api/points/earn` - Earn points
+- `POST /api/points/spend` - Spend points
+- `GET /api/points/transactions` - Get point history
 
 ## Database Schema
 
-### Core Models
-- **User** - User accounts and profiles
-- **RunnerProfile** - Detailed runner information
-- **Race** - Race information and details
-- **TrainingPlan** - AI-generated training plans
-- **Workout** - Individual workout sessions
+### Core Models (MVP1)
+- **Athlete** - User accounts and profiles (universal entity)
+- **Crew** - Running crews with join codes
+- **AthleteCrew** - Many-to-many relationship (athletes ↔ crews)
 - **Activity** - Completed activities (Garmin sync)
-- **Reflection** - User reflections and journaling
+- **Points** - Points balance and transactions
+- **PointTransaction** - Points earned/spent history
 
 ### Key Relationships
-- User → RunnerProfile (1:1)
-- User → TrainingPlan (1:many)
-- Race → TrainingPlan (1:many)
-- TrainingPlan → Workout (1:many)
-- User → Activity (1:many)
-- User → Reflection (1:many)
+- Athlete → Crew (many-to-many via AthleteCrew)
+- Athlete → Activity (one-to-many)
+- Athlete → Points (one-to-one)
+- Points → PointTransaction (one-to-many)
+- Crew → AthleteCrew (one-to-many)
 
-## AI Integration
+## Garmin Integration
 
-### Training Plan Generation
-The AI service generates personalized training plans based on:
-- User's current fitness level
-- Race goals and timeline
-- Training preferences
-- Injury history
+### Activity Sync
+The Garmin Connect API integration provides:
+- **Real-time activity sync** from Garmin devices
+- **Automatic leaderboard updates** when new activities are logged
+- **Activity aggregation** for crew competitions
+- **Points calculation** based on activity achievements
 
-### Workout Analysis
-AI analyzes completed workouts to provide:
-- Performance insights
-- Pace analysis
-- Effort level assessment
-- Personalized recommendations
+### Leaderboard Calculations
+- **Weekly/Monthly totals** - Miles, calories, runs
+- **Best splits** - Fastest mile, 5K, 10K times
+- **Consistency metrics** - Streaks, frequency
+- **Crew rankings** - Relative performance within crew
 
-### Race Strategy
-AI generates race-specific strategies including:
-- Pacing plans
-- Nutrition strategies
-- Mental preparation
-- Course-specific tactics
+### Points System
+- **Activity completion** - Points for logging runs
+- **Achievement bonuses** - PRs, streaks, milestones
+- **Crew participation** - Points for crew activities
+- **Leaderboard positions** - Bonus points for top rankings
 
 ## Development
 
@@ -162,8 +164,12 @@ curl -X POST http://localhost:3001/api/training/plans/generate \
 
 ### Environment Variables
 - `DATABASE_URL` - PostgreSQL connection string
-- `OPENAI_API_KEY` - OpenAI API key
+- `FIREBASE_PROJECT_ID` - Firebase project ID
+- `FIREBASE_PRIVATE_KEY` - Firebase private key
+- `FIREBASE_CLIENT_EMAIL` - Firebase client email
 - `JWT_SECRET` - JWT signing secret
+- `GARMIN_CONSUMER_KEY` - Garmin API consumer key
+- `GARMIN_CONSUMER_SECRET` - Garmin API consumer secret
 - `PORT` - Server port (default: 3001)
 - `NODE_ENV` - Environment (development/production)
 

@@ -10,10 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
+model Racer {
+  racerId   String   @id // Main identifier - no separate id field
   email     String   @unique
-  name      String?
+  firstName String?
+  lastName  String?
+  phone     String?
+  age       Int?     // Age for baseline pace calculations
+  firebaseId String? // Firebase auth ID
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -24,14 +28,15 @@ model User {
   trainingPlans TrainingPlan[]
   activities   Activity[]
   reflections  Reflection[]
+  userRaces    UserRace[]
 
-  @@map("users")
+  @@map("racers")
 }
 
 model RunnerProfile {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  racerId String @unique
+  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
 
   // Personal Info
   age           Int?
@@ -58,7 +63,7 @@ model RunnerProfile {
 }
 
 model Race {
-  id          String   @id @default(cuid())
+  raceId      String   @id // Main race identifier
   name        String
   date        DateTime
   distance    String   // "5K", "10K", "Half Marathon", "Marathon"
@@ -71,6 +76,19 @@ model Race {
   courseType    String? // flat, hilly, trail, road
   weatherNotes  String?
 
+  // Race details
+  registrationOpen Boolean @default(true)
+  price           Float?
+  maxParticipants Int?
+  startTime       String? // "7:00 AM"
+  packetPickup    String? // "Friday 4-8 PM"
+  
+  // Course specifics
+  startLocation String?
+  finishLocation String?
+  aidStations   Int?
+  timeLimit     String? // "6 hours"
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -83,10 +101,10 @@ model Race {
 
 model UserRace {
   id       String @id @default(cuid())
-  userId   String
+  racerId  String
   raceId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  race     Race   @relation(fields: [raceId], references: [id], onDelete: Cascade)
+  racer    Racer   @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
+  race     Race    @relation(fields: [raceId], references: [raceId], onDelete: Cascade)
 
   // Race-specific data
   goalTime     String?  // "3:30:00"
@@ -101,16 +119,16 @@ model UserRace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, raceId])
+  @@unique([racerId, raceId])
   @@map("user_races")
 }
 
 model TrainingPlan {
-  id     String @id @default(cuid())
-  userId String
-  raceId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  race   Race   @relation(fields: [raceId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  racerId String
+  raceId  String
+  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
+  race    Race   @relation(fields: [raceId], references: [id], onDelete: Cascade)
 
   // Plan metadata
   startDate    DateTime
@@ -166,9 +184,9 @@ model Workout {
 }
 
 model Activity {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  racerId String
+  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
 
   // Activity data
   name        String
@@ -196,9 +214,9 @@ model Activity {
 }
 
 model Reflection {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  racerId String
+  racer   Racer  @relation(fields: [racerId], references: [racerId], onDelete: Cascade)
 
   // Reflection data
   date        DateTime
