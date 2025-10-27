@@ -1,106 +1,45 @@
 // Athlete Create Route - Create or find athlete from Firebase data
 // Athlete-first architecture - firebaseId links to athleteId
+// TEMPORARY: Mock responses until Prisma is re-added
 
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 /**
  * Create or Find Athlete from Firebase data
  * Called after Firebase sign-in to create/find athlete record
  * Links Firebase user to GoFast athlete
+ * TEMPORARY: Returns mock data until Prisma is re-added
  */
 router.post('/athleteuser', async (req, res) => {
   try {
     const { firebaseId, email, firstName, lastName, photoURL } = req.body;
     
     console.log('🔐 AUTH: FindOrCreate for firebaseId:', firebaseId);
+    console.log('⚠️ TEMPORARY: Using mock response until Prisma is re-added');
     
-    // 1. Find existing Athlete by firebaseId first
-    let athlete = await prisma.athlete.findFirst({
-      where: { firebaseId }
-    });
+    // Mock athlete response
+    const mockAthlete = {
+      id: 'mock-athlete-' + Date.now(),
+      firebaseId: firebaseId,
+      email: email,
+      firstName: firstName || 'Mock',
+      lastName: lastName || 'User',
+      gofastHandle: null,
+      birthday: null,
+      gender: null,
+      city: null,
+      state: null,
+      primarySport: null,
+      photoURL: photoURL || null,
+      bio: null,
+      instagram: null
+    };
     
-    if (athlete) {
-      console.log('✅ AUTH: Existing Athlete found:', athlete.id);
-      return res.json({
-        id: athlete.id,
-        firebaseId: athlete.firebaseId,
-        email: athlete.email,
-        firstName: athlete.firstName,
-        lastName: athlete.lastName,
-        gofastHandle: athlete.gofastHandle,
-        birthday: athlete.birthday,
-        gender: athlete.gender,
-        city: athlete.city,
-        state: athlete.state,
-        primarySport: athlete.primarySport,
-        photoURL: athlete.photoURL,
-        bio: athlete.bio,
-        instagram: athlete.instagram
-      });
-    }
+    console.log('✅ AUTH: Mock Athlete created:', mockAthlete.id);
     
-    // 2. Find existing Athlete by email (might have been pre-created)
-    athlete = await prisma.athlete.findFirst({
-      where: { email }
-    });
-    
-    if (athlete) {
-      console.log('✅ AUTH: Athlete found by email - linking firebaseId:', athlete.id);
-      // Link firebaseId to existing Athlete
-      athlete = await prisma.athlete.update({
-        where: { id: athlete.id },
-        data: { 
-          firebaseId,
-          photoURL: photoURL || undefined
-        }
-      });
-      
-      return res.json({
-        id: athlete.id,
-        firebaseId: athlete.firebaseId,
-        email: athlete.email,
-        firstName: athlete.firstName,
-        lastName: athlete.lastName,
-        gofastHandle: athlete.gofastHandle,
-        birthday: athlete.birthday,
-        gender: athlete.gender,
-        city: athlete.city,
-        state: athlete.state,
-        primarySport: athlete.primarySport,
-        photoURL: athlete.photoURL,
-        bio: athlete.bio,
-        instagram: athlete.instagram
-      });
-    }
-    
-    // 3. No Athlete found - Create new Athlete
-    console.log('📝 AUTH: Creating new Athlete for:', email);
-    
-    athlete = await prisma.athlete.create({
-      data: {
-        firebaseId,
-        email,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        photoURL: photoURL || null,
-        status: 'active'
-      }
-    });
-    
-    console.log('✅ AUTH: New Athlete created:', athlete.id);
-    
-    res.status(201).json({
-      id: athlete.id,
-      firebaseId: athlete.firebaseId,
-      email: athlete.email,
-      firstName: athlete.firstName,
-      lastName: athlete.lastName,
-      photoURL: athlete.photoURL
-    });
+    res.status(201).json(mockAthlete);
     
   } catch (error) {
     console.error('❌ AUTH: FindOrCreate error:', error);
